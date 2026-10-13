@@ -6,6 +6,8 @@
 
 先讀 `docs/architecture.md`。所有行為、通訊格式、資料夾結構都以它為準；要偏離時先問使用者，並更新文件。
 
+做前端（畫面、CSS）之前，先讀 `docs/design.md`。顏色、字體、元件樣式都以它為準。
+
 ## 目前進度：階段一
 
 - 只做前端與示範模式（`js/chat/demo-chat.js`），`js/config.js` 保持空的。
