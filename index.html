@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>匿名聊天室</title>
+  <meta name="description" content="不用註冊，取一個代號就能開始聊天。">
+  <meta name="theme-color" content="#F3FBF8">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='7' fill='%235EEAD4'/%3E%3Cpath d='M2.5 8.5c3.2-1.6 6.3-1.6 9.5 0 3.2-1.6 6.3-1.6 9.5 0 0 5.2-2.6 8.2-5.2 8.2-2.1 0-3.1-2-4.3-2s-2.2 2-4.3 2c-2.6 0-5.2-3-5.2-8.2z' fill='%23fff' stroke='%2312343B' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- 示範模式標示條：只在示範模式出現 -->
+    <div class="demo-bar" id="demo-bar" hidden>
+      <span>示範模式：還沒連上真正的聊天室</span>
+      <button type="button" class="switch" id="offline-switch" role="switch" aria-checked="false" hidden>
+        <span>模擬斷線</span>
+        <span class="switch__track" aria-hidden="true"><span class="switch__knob"></span></span>
+      </button>
+    </div>
+
+    <!-- 進入畫面 -->
+    <main class="join" id="join-screen" hidden>
+      <div class="join__hero">
+        <div class="mask mask--large" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path class="mask__face" d="M2.5 8.5c3.2-1.6 6.3-1.6 9.5 0 3.2-1.6 6.3-1.6 9.5 0 0 5.2-2.6 8.2-5.2 8.2-2.1 0-3.1-2-4.3-2s-2.2 2-4.3 2c-2.6 0-5.2-3-5.2-8.2z"/><path class="mask__eye" d="M6.6 11.6c.8-.7 2-.7 2.8 0"/><path class="mask__eye" d="M14.6 11.6c.8-.7 2-.7 2.8 0"/></svg>
+        </div>
+        <h1 class="join__title">匿名聊天室</h1>
+        <p class="join__lead">取一個代號就能開始聊天，不用註冊。</p>
+      </div>
+      <form class="join__card" id="join-form" novalidate>
+        <label class="join__label" for="nick">你的代號</label>
+        <input class="field" id="nick" name="nick" type="text" autocomplete="nickname" enterkeyhint="go" aria-describedby="nick-help nick-error">
+        <div class="join__meta">
+          <span id="nick-help">取一個 1～10 個字的代號</span>
+          <span id="nick-count" aria-hidden="true">0/10</span>
+        </div>
+        <p class="error" id="nick-error" role="alert" hidden></p>
+        <button type="submit" class="btn btn--primary btn--large">進入</button>
+      </form>
+    </main>
+
+    <!-- 聊天畫面 -->
+    <section class="chat" id="chat-screen" aria-label="聊天室" hidden>
+      <header class="topbar">
+        <div class="topbar__brand">
+          <div class="mask mask--small" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path class="mask__face" d="M2.5 8.5c3.2-1.6 6.3-1.6 9.5 0 3.2-1.6 6.3-1.6 9.5 0 0 5.2-2.6 8.2-5.2 8.2-2.1 0-3.1-2-4.3-2s-2.2 2-4.3 2c-2.6 0-5.2-3-5.2-8.2z"/></svg>
+          </div>
+          <div class="topbar__titles">
+            <h1 class="topbar__title">匿名聊天室</h1>
+            <button type="button" class="count-pill" id="online-toggle" aria-expanded="false" aria-controls="online-panel">
+              <span class="dot" aria-hidden="true"></span>
+              <span class="online-count">線上 0 人</span>
+              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+        </div>
+        <button type="button" class="btn btn--secondary" id="leave-button">離開</button>
+      </header>
+
+      <div class="status-bar" id="status-bar" role="status" hidden>
+        <svg class="spinner" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg>
+        <span id="status-text"></span>
+      </div>
+
+      <div class="chat__body">
+        <div class="chat__main">
+          <div class="messages-wrap">
+            <div class="messages" id="messages" role="log" aria-live="polite" aria-label="聊天訊息" tabindex="0"></div>
+            <div class="alone" id="alone" hidden>
+              <div class="alone__card">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path class="mask__face mask__face--own" d="M2.5 8.5c3.2-1.6 6.3-1.6 9.5 0 3.2-1.6 6.3-1.6 9.5 0 0 5.2-2.6 8.2-5.2 8.2-2.1 0-3.1-2-4.3-2s-2.2 2-4.3 2c-2.6 0-5.2-3-5.2-8.2z"/><path class="mask__eye" d="M6.6 11.6c.8-.7 2-.7 2.8 0"/><path class="mask__eye" d="M14.6 11.6c.8-.7 2-.7 2.8 0"/></svg>
+                <p>目前只有你在這裡<br>把網址分享給朋友吧</p>
+              </div>
+            </div>
+            <button type="button" class="btn btn--primary btn--pill new-messages" id="new-messages" hidden>有新訊息 ↓</button>
+          </div>
+
+          <form class="composer" id="composer" novalidate>
+            <p class="composer__hint" id="composer-hint" role="status" hidden></p>
+            <div class="composer__row">
+              <label class="visually-hidden" for="message-input">輸入訊息</label>
+              <textarea class="field composer__input" id="message-input" rows="1" placeholder="輸入訊息" enterkeyhint="send"></textarea>
+              <button type="submit" class="btn btn--primary composer__send" id="send-button" disabled>送出</button>
+            </div>
+            <p class="composer__keys">Enter 送出・Shift+Enter 換行</p>
+          </form>
+        </div>
+
+        <aside class="online" id="online-panel" aria-label="線上名單">
+          <div class="online__heading">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="online-count">線上 0 人</span>
+          </div>
+          <ul class="online__list" id="online-list"></ul>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <noscript>這個聊天室需要開啟 JavaScript 才能使用。</noscript>
+</body>
+</html>

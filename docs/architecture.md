@@ -519,10 +519,12 @@ flowchart TB
 │   └── ui/                 畫面
 │       ├── join-screen.js  進入畫面
 │       ├── chat-screen.js  聊天畫面：訊息區、輸入區、自動捲動
-│       └── online-list.js  線上名單
+│       ├── online-list.js  線上名單
+│       └── person.js       頭像和「#三碼」標籤（訊息和名單共用）
 └── docs/
     ├── requirements.md     需求說明
-    └── architecture.md     這份文件
+    ├── architecture.md     這份文件
+    └── design.md           畫面設計規格（顏色、字體、元件）
 ```
 
 **看懂這個結構的訣竅**：`core/` 是規則，`chat/` 是跟外界連線，`ui/` 是畫面。畫面只透過「插座」跟 `chat/` 講話，所以換掉 `chat/` 裡的檔案，畫面完全不用動。

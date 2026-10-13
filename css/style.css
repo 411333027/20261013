@@ -1,0 +1,982 @@
+/* 匿名聊天室：貼紙風（規格見 docs/design.md） */
+
+:root {
+  --ink: #12343B;
+  --muted: #4A6670;
+  --ground: #F3FBF8;
+  --dot: rgba(18, 52, 59, 0.12);
+  --surface: #FFFFFF;
+  --accent: #5EEAD4;
+  --own: #CCFBF1;
+  --link: #0F766E;
+  --demo: #FFE58F;
+  --danger: #B42318;
+  --danger-bg: #FFF1EE;
+  --online: #16A34A;
+  --disabled-bg: #E3ECE9;
+  --disabled-border: #9DB3B0;
+
+  --font-round: "Huninn", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+
+  --line: 2px solid var(--ink);
+  --line-thin: 1.5px solid var(--ink);
+  --shadow-card: 5px 5px 0 var(--ink);
+  --shadow-btn: 3px 3px 0 var(--ink);
+  --shadow-bubble: 2px 2px 0 var(--ink);
+}
+
+/* ---------- 基本 ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background-color: var(--ground);
+  background-image: radial-gradient(var(--dot) 1.2px, transparent 1.6px);
+  background-size: 18px 18px;
+  -webkit-text-size-adjust: 100%;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.app {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---------- 按鈕與輸入框 ---------- */
+
+.btn {
+  min-height: 44px;
+  padding: 0 16px;
+  border: var(--line);
+  border-radius: 14px;
+  font-family: var(--font-round);
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 80ms ease-out, box-shadow 80ms ease-out;
+}
+
+.btn--primary {
+  background: var(--accent);
+  box-shadow: var(--shadow-btn);
+}
+
+.btn--secondary {
+  background: var(--surface);
+  box-shadow: var(--shadow-btn);
+}
+
+.btn--large {
+  min-height: 54px;
+  border-radius: 16px;
+  font-size: 20px;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.btn--pill {
+  border-radius: 999px;
+  padding: 0 18px;
+  font-size: 15px;
+}
+
+/* 按下去：像把貼紙壓下去 */
+.btn:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.btn--large:active:not(:disabled) {
+  transform: translate(4px, 4px);
+}
+
+.btn:disabled {
+  background: var(--disabled-bg);
+  border-color: var(--disabled-border);
+  color: var(--muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.field {
+  width: 100%;
+  border: var(--line);
+  border-radius: 16px;
+  background: var(--ground);
+  color: var(--ink);
+}
+
+.field:focus {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
+}
+
+.field.is-invalid {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+}
+
+/* ---------- 面具圖示 ---------- */
+
+.mask {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  border: var(--line);
+  transform: rotate(-6deg);
+}
+
+.mask--large {
+  width: 112px;
+  height: 112px;
+  border-radius: 36px;
+  box-shadow: var(--shadow-card);
+}
+
+.mask--large svg {
+  width: 72px;
+  height: 72px;
+}
+
+.mask--small {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+}
+
+.mask--small svg {
+  width: 28px;
+  height: 28px;
+}
+
+.mask__face {
+  fill: #FFFFFF;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.mask__face--own {
+  fill: var(--own);
+}
+
+.mask__eye {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+/* ---------- 示範模式標示條 ---------- */
+
+.demo-bar {
+  flex: none;
+  min-height: 44px;
+  padding: 4px 8px 4px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--demo);
+  border-bottom: var(--line);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.switch {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.switch__track {
+  width: 34px;
+  height: 20px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  border: var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.switch__knob {
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+  background: var(--ink);
+}
+
+.switch[aria-checked="true"] {
+  font-weight: 700;
+}
+
+.switch[aria-checked="true"] .switch__track {
+  justify-content: flex-end;
+  background: var(--ink);
+}
+
+.switch[aria-checked="true"] .switch__knob {
+  background: var(--demo);
+}
+
+/* ---------- 進入畫面 ---------- */
+
+.join {
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+}
+
+.join__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.join__title {
+  margin: 10px 0 0;
+  font-family: var(--font-round);
+  font-weight: 400;
+  font-size: 36px;
+  letter-spacing: 0.04em;
+}
+
+.join__lead {
+  margin: 0;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.join__card {
+  margin: 0;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface);
+  border: var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow-card);
+}
+
+.join__label {
+  font-family: var(--font-round);
+  font-size: 16px;
+}
+
+.join__card .field {
+  height: 52px;
+  padding: 0 16px;
+  font-size: 18px;
+}
+
+.join__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.join__meta .is-over {
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.join__card .btn {
+  margin-top: 14px;
+}
+
+.error {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--danger);
+}
+
+.error::before {
+  content: "!";
+  flex: none;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--danger);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ---------- 聊天畫面：骨架 ---------- */
+
+.chat {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  flex: none;
+  padding: 10px 12px 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--surface);
+  border-bottom: var(--line);
+}
+
+.topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.topbar__titles {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.topbar__title {
+  margin: 0;
+  font-family: var(--font-round);
+  font-weight: 400;
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.count-pill {
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 10px;
+  border: var(--line-thin);
+  border-radius: 999px;
+  background: var(--ground);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.count-pill[aria-expanded="true"] {
+  background: var(--accent);
+}
+
+.chevron {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 150ms ease-out;
+}
+
+.count-pill[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+
+.dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--online);
+}
+
+.chat.is-offline .dot {
+  background: var(--disabled-border);
+}
+
+.status-bar {
+  flex: none;
+  padding: 11px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ink);
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.chat__body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+}
+
+.chat__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.messages {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 訊息少的時候貼齊底部，多的時候可以往上捲 */
+.messages > :first-child {
+  margin-top: auto;
+}
+
+.messages:focus-visible {
+  outline-offset: -3px;
+}
+
+.chat.is-offline .messages {
+  opacity: 0.6;
+}
+
+/* ---------- 訊息 ---------- */
+
+.msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 86%;
+}
+
+.avatar {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--line);
+  border-radius: 12px;
+  font-family: var(--font-round);
+  font-size: 15px;
+}
+
+.msg__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.msg__who {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.msg__name {
+  font-family: var(--font-round);
+  font-size: 13px;
+}
+
+.tag {
+  flex: none;
+  padding: 0 6px;
+  border: var(--line-thin);
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.msg__line {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.bubble {
+  min-width: 0;
+  padding: 9px 13px;
+  background: var(--surface);
+  border: var(--line);
+  border-radius: 4px 16px 16px 16px;
+  box-shadow: var(--shadow-bubble);
+  font-size: 15px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.msg__time {
+  flex: none;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.msg--own {
+  align-self: flex-end;
+  max-width: 80%;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.msg--own .msg__line {
+  flex-direction: row-reverse;
+}
+
+.msg--own .bubble {
+  background: var(--own);
+  border-radius: 16px 4px 16px 16px;
+}
+
+.msg--failed .bubble {
+  background: var(--surface);
+  border: 2px dashed var(--danger);
+  box-shadow: none;
+  color: var(--muted);
+}
+
+.failed-tag {
+  padding: 1px 8px;
+  border: 1.5px solid var(--danger);
+  border-radius: 999px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.system {
+  align-self: center;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 2px dashed var(--ink);
+  border-radius: 999px;
+  background: var(--surface);
+  font-family: var(--font-round);
+  font-size: 13px;
+  text-align: center;
+}
+
+.system svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 每個人的識別色（頭像和 #三碼 共用） */
+.tone-0 { background: #EDE9FE; }
+.tone-1 { background: #DCFCE7; }
+.tone-2 { background: #DBEAFE; }
+.tone-3 { background: #FFEDD5; }
+.tone-4 { background: #FCE7F3; }
+.tone-5 { background: #FEF9C3; }
+
+/* ---------- 只有你一個人、有新訊息 ---------- */
+
+.alone {
+  position: absolute;
+  inset: 0;
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.alone__card {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: var(--line);
+  border-radius: 22px;
+  box-shadow: var(--shadow-card);
+  transform: rotate(-2deg);
+}
+
+.alone__card svg {
+  width: 56px;
+  height: 56px;
+}
+
+.alone__card p {
+  margin: 0;
+  font-family: var(--font-round);
+  font-size: 17px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.new-messages {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  translate: -50% 0;
+}
+
+/* ---------- 輸入區 ---------- */
+
+.composer {
+  flex: none;
+  margin: 0;
+  padding: 10px 12px max(14px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface);
+  border-top: var(--line);
+}
+
+.composer__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.composer__input {
+  flex: 1;
+  min-height: 46px;
+  max-height: 140px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  resize: none;
+  font-size: 16px; /* 小於 16px 時 iPhone 會在點輸入框時自動放大畫面 */
+  line-height: 1.5;
+}
+
+.composer__send {
+  flex: none;
+  min-width: 68px;
+  min-height: 46px;
+  border-radius: 18px;
+}
+
+.composer__hint {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.composer__hint--warn {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border: var(--line-thin);
+  border-radius: 999px;
+  background: var(--demo);
+}
+
+.composer__hint--warn::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background:
+    linear-gradient(var(--ink), var(--ink)) 50% 30% / 2px 40% no-repeat;
+}
+
+.composer__hint--error {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px;
+  color: var(--danger);
+}
+
+.composer__hint--info {
+  padding-left: 4px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.composer__keys {
+  display: none;
+  margin: 0;
+  padding-left: 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- 線上名單（手機：從頂端列往下展開的卡片） ---------- */
+
+.online {
+  display: none;
+  position: absolute;
+  z-index: 5;
+  top: 8px;
+  left: 12px;
+  right: 12px;
+  max-height: calc(100% - 16px);
+  overflow-y: auto;
+  padding: 10px 14px;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--surface);
+  border: var(--line);
+  border-radius: 18px;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.online.is-open {
+  display: flex;
+}
+
+.online__heading {
+  display: none;
+}
+
+.online__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.online__item {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+
+.online__name {
+  font-family: var(--font-round);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.online__you {
+  flex: none;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ---------- 電腦版 ---------- */
+
+@media (min-width: 768px) {
+  .demo-bar {
+    padding-left: 24px;
+    padding-right: 16px;
+  }
+
+  .topbar {
+    padding: 12px 20px 12px 24px;
+  }
+
+  .topbar__brand {
+    gap: 12px;
+  }
+
+  .topbar__title {
+    font-size: 22px;
+  }
+
+  .mask--small {
+    width: 44px;
+    height: 44px;
+  }
+
+  .mask--small svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  .count-pill {
+    display: none;
+  }
+
+  .chat__body {
+    gap: 20px;
+    padding: 20px 24px 24px;
+  }
+
+  .chat__main {
+    overflow: hidden;
+    background: var(--surface);
+    border: var(--line);
+    border-radius: 22px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .messages-wrap {
+    background-color: var(--ground);
+    background-image: radial-gradient(rgba(18, 52, 59, 0.10) 1.2px, transparent 1.6px);
+    background-size: 18px 18px;
+  }
+
+  .messages {
+    padding: 24px max(24px, calc((100% - 820px) / 2));
+  }
+
+  .msg {
+    gap: 10px;
+    max-width: 72%;
+  }
+
+  .msg--own {
+    max-width: 70%;
+  }
+
+  .messages .avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .composer {
+    padding: 14px max(20px, calc((100% - 820px) / 2)) 10px;
+    gap: 6px;
+  }
+
+  .composer__input {
+    font-size: 15px;
+  }
+
+  .composer__keys {
+    display: block;
+  }
+
+  .online,
+  .online.is-open {
+    display: flex;
+    position: static;
+    flex: none;
+    width: 260px;
+    max-height: 100%;
+    align-self: flex-start;
+    padding: 18px 16px;
+    border-radius: 22px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .online__heading {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 12px;
+    border: var(--line-thin);
+    border-radius: 999px;
+    background: var(--accent);
+    font-family: var(--font-round);
+    font-size: 15px;
+  }
+}
+
+/* ---------- 減少動態 ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
